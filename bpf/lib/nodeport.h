@@ -769,7 +769,7 @@ int tail_rev_nodeport_lb6(struct __ctx_buff *ctx)
 {
 	int ifindex = 0;
 	int ret = 0;
-#if defined(ENABLE_HOST_FIREWALL) && defined(HOST_EP_ID)
+#if defined(ENABLE_HOST_FIREWALL) && defined(IS_BPF_HOST)
 	/* We only enforce the host policies if nodeport.h is included from
 	 * bpf_host.
 	 */
@@ -791,7 +791,10 @@ int tail_rev_nodeport_lb6(struct __ctx_buff *ctx)
 	return ctx_redirect(ctx, ifindex, 0);
 }
 
-declare_tailcall_if(__and(is_defined(ENABLE_IPV4), is_defined(ENABLE_IPV6)),
+declare_tailcall_if(__or(__and(is_defined(ENABLE_IPV4),
+			       is_defined(ENABLE_IPV6)),
+			 __and(is_defined(ENABLE_HOST_FIREWALL),
+			       is_defined(IS_BPF_HOST))),
 		    CILIUM_CALL_IPV6_ENCAP_NODEPORT_NAT)
 int tail_handle_nat_fwd_ipv6(struct __ctx_buff *ctx)
 {
@@ -1491,7 +1494,7 @@ int tail_rev_nodeport_lb4(struct __ctx_buff *ctx)
 {
 	int ifindex = 0;
 	int ret = 0;
-#if defined(ENABLE_HOST_FIREWALL) && defined(HOST_EP_ID)
+#if defined(ENABLE_HOST_FIREWALL) && defined(IS_BPF_HOST)
 	/* We only enforce the host policies if nodeport.h is included from
 	 * bpf_host.
 	 */
@@ -1513,7 +1516,10 @@ int tail_rev_nodeport_lb4(struct __ctx_buff *ctx)
 	return ctx_redirect(ctx, ifindex, 0);
 }
 
-declare_tailcall_if(__and(is_defined(ENABLE_IPV4), is_defined(ENABLE_IPV6)),
+declare_tailcall_if(__or(__and(is_defined(ENABLE_IPV4),
+			       is_defined(ENABLE_IPV6)),
+			 __and(is_defined(ENABLE_HOST_FIREWALL),
+			       is_defined(IS_BPF_HOST))),
 		    CILIUM_CALL_IPV4_ENCAP_NODEPORT_NAT)
 int tail_handle_nat_fwd_ipv4(struct __ctx_buff *ctx)
 {
@@ -1531,14 +1537,20 @@ static __always_inline int nodeport_nat_fwd(struct __ctx_buff *ctx)
 	switch (proto) {
 #ifdef ENABLE_IPV4
 	case bpf_htons(ETH_P_IP):
-		invoke_tailcall_if(__and(is_defined(ENABLE_IPV4), is_defined(ENABLE_IPV6)),
+		invoke_tailcall_if(__or(__and(is_defined(ENABLE_IPV4),
+					      is_defined(ENABLE_IPV6)),
+					__and(is_defined(ENABLE_HOST_FIREWALL),
+					      is_defined(IS_BPF_HOST))),
 				   CILIUM_CALL_IPV4_ENCAP_NODEPORT_NAT,
 				   tail_handle_nat_fwd_ipv4);
 		break;
 #endif /* ENABLE_IPV4 */
 #ifdef ENABLE_IPV6
 	case bpf_htons(ETH_P_IPV6):
-		invoke_tailcall_if(__and(is_defined(ENABLE_IPV4), is_defined(ENABLE_IPV6)),
+		invoke_tailcall_if(__or(__and(is_defined(ENABLE_IPV4),
+					      is_defined(ENABLE_IPV6)),
+					__and(is_defined(ENABLE_HOST_FIREWALL),
+					      is_defined(IS_BPF_HOST))),
 				   CILIUM_CALL_IPV6_ENCAP_NODEPORT_NAT,
 				   tail_handle_nat_fwd_ipv6);
 		break;
