@@ -267,8 +267,8 @@ func (s *LocalObserverServer) ServerStatus(ctx context.Context, req *observerpb.
 	status := s.ringBuffer.Status()
 	return &observerpb.ServerStatusResponse{
 		MaxFlows:  uint64(s.maxFlows),
-		NumFlows:  uint64(status.NumFlows),
-		SeenFlows: uint64(status.SeenFlows),
+		NumFlows:  uint64(status.NumEvents),
+		SeenFlows: uint64(status.SeenEvents),
 		UptimeNs:  uint64(time.Since(s.startTime).Nanoseconds()),
 	}, nil
 }
